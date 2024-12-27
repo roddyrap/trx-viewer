@@ -1,10 +1,47 @@
 import argparse
 import sys
 import pathlib
+import logging
 
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore, QtWidgets, QtGui, QtSvgWidgets
 
-from trx import TestRun
+from trx import TestData, TestRun
+
+class TestInformationWidget(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        # The grid layout is weird, so I don't use it. 
+        self.widget_layout = QtWidgets.QHBoxLayout(self)
+
+        self.left_column_widget = QtWidgets.QWidget()
+        self.left_column_layout = QtWidgets.QVBoxLayout(self.left_column_widget)
+        self.widget_layout.addWidget(self.left_column_widget)
+
+        self.right_column_widget = QtWidgets.QWidget()
+        self.right_column_layout = QtWidgets.QVBoxLayout(self.right_column_widget)
+        self.widget_layout.addWidget(self.right_column_widget)
+
+        self.exec_id_label = QtWidgets.QLabel()
+        self.left_column_layout.addWidget(self.exec_id_label)
+
+        self.test_id_label = QtWidgets.QLabel()
+        self.left_column_layout.addWidget(self.test_id_label)
+
+        self.test_time = QtWidgets.QLabel()
+        self.left_column_layout.addWidget(self.test_time)
+
+        self.outcome_image = QtSvgWidgets.QSvgWidget()
+        self.right_column_layout.addWidget(self.outcome_image)
+
+        self.test_date_span = QtWidgets.QLabel()
+        self.right_column_layout.addWidget(self.test_date_span)
+
+    def update_test_data(self, test_data: TestData):
+        self.exec_id_label.setText(f"Exec ID: {test_data.execution_id}")
+        self.test_id_label.setText(f"Test ID: {test_data.test_id}")
+
+        self.test_date_span.setText(f"{test_data.start_date} - {test_data.end_date}")
 
 class TestViewWidget(QtWidgets.QWidget):
     def __init__(self, test_run: TestRun):
@@ -24,7 +61,7 @@ class TestViewWidget(QtWidgets.QWidget):
 
         self.title_label.setPalette(title_palette)
 
-        print("Created title widget")
+        logging.debug("Created title widget")
 
         # Tests view.
 
@@ -46,42 +83,24 @@ class TestViewWidget(QtWidgets.QWidget):
         self.tests_list_widget.itemSelectionChanged.connect(self.test_selection_changed)
         test_list_layout.addWidget(self.tests_list_widget)
 
-        self.test_info_widget = QtWidgets.QTextBrowser()
+        self.test_info_widget = TestInformationWidget()
 
+        # test_view.setSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
         test_view_layout.addWidget(self.test_list_view)
         test_view_layout.addWidget(self.test_info_widget)
+        test_view_layout.setStretch(0, 1)
+        test_view_layout.setStretch(1, 1)
 
-        print("Created tests list")
+        logging.debug("Created tests list")
 
         # Layouts.
 
         self.widget_layout.addWidget(self.title_label)
         self.widget_layout.addWidget(test_view)
 
-        print("Created layouts")
-
     def update_test_info(self, new_test_index: int):
         test_data = self.test_run.tests[new_test_index]
-        formatted_info = f"""Test duration: {test_data.duration}
-Execution ID: {test_data.execution_id}
-Test ID: {test_data.test_id}
-
-Computer name: {test_data.computer_name}
-Duration: {test_data.duration}
-
-Start Date: {test_data.start_date}
-End date: {test_data.end_date}
-
-Test type: {test_data.test_type}
-Outcome: {test_data.outcome}"""
-
-        if test_data.output.stdout is not None:
-            formatted_info += f"\nStandard Output:\n{test_data.output.stdout.text}"
-
-        if test_data.output.stderr is not None:
-            formatted_info += f"\nStandard Output:\n{test_data.output.stderr.text}"
-
-        self.test_info_widget.setText(formatted_info)
+        self.test_info_widget.update_test_data(test_data)
 
     @QtCore.Slot()
     def test_selection_changed(self):
@@ -126,21 +145,17 @@ Outcome: {test_data.outcome}"""
 
         return list_widget
 
-@QtCore.Slot()
-def print_widget(widget: QtWidgets.QWidget):
-    print(widget)
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("trx_path", type=pathlib.Path)
 
     args = parser.parse_args()
 
-    print("Parsing TRX")
+    logging.debug("Parsing TRX")
 
     test_run = TestRun.from_trx_file(args.trx_path)
 
-    print("Launching QT app")
+    logging.debug("Launching QT app")
 
     app = QtWidgets.QApplication([])
 
@@ -148,3 +163,7 @@ if __name__ == "__main__":
     root.show()
 
     sys.exit(app.exec())
+
+if __name__ == "__main__":
+    logging.basicConfig(format='%(asctime)s) [%(levelname)s] %(name)s: %(message)s', level=logging.DEBUG)
+    main()
