@@ -20,17 +20,17 @@
      borderopacity="1.0"
      inkscape:showpageshadow="2"
      inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
+     inkscape:pagecheckerboard="true"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="px"
      inkscape:zoom="1.1893651"
-     inkscape:cx="175.30362"
-     inkscape:cy="301.00093"
-     inkscape:window-width="1916"
-     inkscape:window-height="1013"
+     inkscape:cx="224.06913"
+     inkscape:cy="330.84879"
+     inkscape:window-width="1920"
+     inkscape:window-height="1014"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
      id="defs1" />
@@ -38,6 +38,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#ffffff;stroke-width:25.3008;stroke-miterlimit:3.1"
+       id="rect3"
+       width="135.46666"
+       height="135.46666"
+       x="2.7270507e-06"
+       y="2.7270507e-06" />
     <rect
        style="fill:#008600;fill-opacity:1;stroke:none;stroke-width:33.4939;stroke-miterlimit:3.1;stroke-dasharray:none;stroke-opacity:1"
        id="rect2"
