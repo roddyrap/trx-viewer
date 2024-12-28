@@ -1,10 +1,13 @@
-from typing import List, Optional
-from xml.etree import ElementTree
+from typing import Generator, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 
+# TODO: Consider using lxml instead.
+from xml.etree import ElementTree
+
 TRX_SCHEMA_NAME = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}"
-TEST_RESULT_TAG = f"{TRX_SCHEMA_NAME}Results/{TRX_SCHEMA_NAME}UnitTestResult"
+TEST_RUN_TAG = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}TestRun"
+TEST_RESULT_TAG = f"{TRX_SCHEMA_NAME}UnitTestResult"
 
 @dataclass
 class TestOutput:
@@ -57,21 +60,40 @@ class TestData:
             xml_node.get("outcome"),
         )
 
+# TODO: A class isn't really necessary, namedtuple maybe?
 @dataclass
 class TestRun:
     name: str
     id: int
-    tests: List[TestData]
 
     @classmethod
-    def from_trx_file(cls, filename: str):
-        with open(filename, "rb") as trx_file:
-            tree = ElementTree.parse(trx_file)
-
-        root = tree.getroot()
-
+    def from_xml(cls, root: ElementTree.Element):
         name = root.get('name')
         trx_id = root.get('trx_id')
-        tests = [TestData.from_xml(test_xml) for test_xml in tree.getroot().findall(TEST_RESULT_TAG)]
 
-        return cls(name, trx_id, tests)
+        return cls(name, trx_id)
+
+class StreamedTestMetadata:
+    def __init__(self, filename: str):
+        self.filename = filename
+        self.xml_parser = ElementTree.iterparse(self.filename, events=["start", "end"])
+
+        # TODO: Better handling.
+        last_event: Tuple[str, ElementTree.Element] = next(self.xml_parser)
+        if last_event[0] != "start" or last_event[1].tag != TEST_RUN_TAG:
+            raise RuntimeError(f"TestRun isn't first element in TRX! {last_event!r}")
+
+        self.test_run = TestRun.from_xml(last_event[1])
+
+    # This fully consumes the parser.
+    def yield_tests(self) -> Generator[TestData]:
+        event: Tuple[str, ElementTree.Element]
+        for event in self.xml_parser:
+            if event[0] != "end" or event[1].tag != TEST_RESULT_TAG:
+                continue
+
+            yield TestData.from_xml(event[1])
+
+    # TODO: Manual Close is actually a real bummer.
+    def close(self):
+        self.xml_parser.close()

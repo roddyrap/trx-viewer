@@ -70,6 +70,13 @@ ApplicationWindow {
                 flickableDirection: Flickable.AutoFlickIfNeeded
                 boundsBehavior: Flickable.StopAtBounds
 
+                // Remove slow animation, mostly because it gets chopped in dynamic loading of
+                // long files.
+                highlightMoveDuration: -1
+                highlightMoveVelocity: -1
+                highlightResizeDuration: -1
+                highlightResizeVelocity: -1
+
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AsNeeded
                     active: ScrollBar.AsNeeded
