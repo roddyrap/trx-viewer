@@ -125,6 +125,11 @@ ApplicationWindow {
                 }
                 focus: true;
             }
+
+            Text {
+                id: num_tests;
+                text: (test_list_view.model.get_is_loading() ? "Loading... " : "") + "Number of tests:" + test_list_view.count
+            }
         }
 
         Item {

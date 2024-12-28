@@ -19,8 +19,10 @@ class TrxListModel(QtCore.QAbstractListModel):
 
         self.test_load_update_interval = test_load_update_interval
         self.filename = trx_filename
-        self.streamed_tests = StreamedTestMetadata(self.filename)
         self.tests_list: List[TestRun] = []
+
+        self.streamed_tests = StreamedTestMetadata(self.filename)
+        self.is_loading = True
 
         test_load_thread = threading.Thread(target=self.load_tests)
         test_load_thread.start()
@@ -43,6 +45,7 @@ class TrxListModel(QtCore.QAbstractListModel):
         self.layoutChanged.emit()
 
         self.streamed_tests.close()
+        self.is_loading = False
         logging.debug("Done loading tests! (%d)", test_index)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
@@ -90,6 +93,10 @@ class TrxListModel(QtCore.QAbstractListModel):
     @QtCore.Slot(result='QString')
     def get_filename(self):
         return self.filename
+
+    @QtCore.Slot(result='bool')
+    def get_is_loading(self):
+        return self.is_loading
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
