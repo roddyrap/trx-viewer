@@ -28,7 +28,10 @@ ApplicationWindow {
         }
         Menu {
             title: "Help"
-            Action { text: "About" }
+            Action {
+                text: "About"
+                onTriggered: about_dialog.open();
+            }
         }
     }
 
@@ -40,6 +43,23 @@ ApplicationWindow {
             root.trxTestsModel.load_file(trx_file_picker.selectedFile.toString().replace("file://",""))
         }
         nameFilters: [ "TRX files (*.trx)", "All files (*)" ]
+    }
+
+    Dialog {
+        id: about_dialog
+        title: "About"
+        popupType: Popup.Item
+        standardButtons: Dialog.Ok
+
+        x: Math.round((parent.width - width) / 2)
+        y: Math.round((parent.height - height) / 2)
+
+        Label {
+            text: `TRX Viewer version 0.1.0
+
+Using QT open-source licensed code (GPLv3).
+Developed by Roddy Rappaport.`
+        }
     }
 
     footer: Label {
