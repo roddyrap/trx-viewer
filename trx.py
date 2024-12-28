@@ -33,6 +33,9 @@ class TestData:
     test_type: str
     outcome: str
 
+    def is_success(self):
+        return self.outcome == "Passed"
+
     @staticmethod
     def __parse_test_duration(duration_str: str) -> float:
         # TRX: duration="00:00:00.0000046"

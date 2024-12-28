@@ -51,6 +51,10 @@ ApplicationWindow {
                 Layout.fillWidth: true;
 
                 id: filter_input
+
+                onEditingFinished: {
+                    filter_input.background.color = root.trxTestsModel.apply_filter_string(filter_input.text) ? "lightgreen" : "lightcoral";
+                }
             }
 
             ListView {
@@ -128,7 +132,7 @@ ApplicationWindow {
 
             Text {
                 id: num_tests;
-                text: (test_list_view.model.get_is_loading() ? "Loading... " : "") + "Number of tests:" + test_list_view.count
+                text: (test_list_view.model.get_is_loading() ? "Loading... " : "") + "Displayed tests: " + test_list_view.count
             }
         }
 

@@ -1,13 +1,14 @@
 import logging
+from typing import List
 import sys
 import threading
-from typing import List
+
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
-
 from PySide6 import QtCore
 
 from trx import TestRun, StreamedTestMetadata
+from expression_filter import build_filter
 
 class TrxListModel(QtCore.QAbstractListModel):
     name_role = QtCore.Qt.UserRole + 1
@@ -19,7 +20,9 @@ class TrxListModel(QtCore.QAbstractListModel):
 
         self.test_load_update_interval = test_load_update_interval
         self.filename = trx_filename
+
         self.tests_list: List[TestRun] = []
+        self.filtered_tests_list: List[TestRun] = self.tests_list
 
         self.streamed_tests = StreamedTestMetadata(self.filename)
         self.is_loading = True
@@ -52,14 +55,14 @@ class TrxListModel(QtCore.QAbstractListModel):
         row = index.row()
         if index.isValid() and 0 <= row < self.rowCount():
             if role == TrxListModel.name_role:
-                return self.tests_list[row].test_name
+                return self.filtered_tests_list[row].test_name
             elif role == TrxListModel.index_role:
                 return row
             elif role == TrxListModel.success_role:
-                return self.tests_list[row].outcome == "Passed"
+                return self.filtered_tests_list[row].is_success()
 
     def rowCount(self, parent=QtCore.QModelIndex()):
-        return len(self.tests_list)
+        return len(self.filtered_tests_list)
 
     def roleNames(self):
         return {
@@ -68,23 +71,50 @@ class TrxListModel(QtCore.QAbstractListModel):
             TrxListModel.success_role: b"success",
         }
 
+    @QtCore.Slot(str, result='bool')
+    def apply_filter_string(self, filter_str: str):
+        logging.debug("Applying filter: %s", filter_str)
+
+        if self.is_loading:
+            return False
+
+        if filter_str == "":
+            self.filtered_tests_list = self.tests_list
+        else:
+            filter_function = build_filter(filter_str)
+            if filter_function is None:
+                return False
+
+            try:
+                new_filtered_tests_list = list(filter(lambda x: filter_function(x), self.tests_list))
+            except Exception as e:
+                logging.warning("Encountered exception while filtering: %s", e)
+                return False
+            
+            self.filtered_tests_list = new_filtered_tests_list
+
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
+
+        return True
+
     @QtCore.Slot(int, result='QVariant')
     def get(self, row):
         if 0 <= row < self.rowCount():
-            return self.tests_list[row]
+            return self.filtered_tests_list[row]
 
     @QtCore.Slot(int, str, result='QVariant')
     def get_attr(self, row, attribute):
         if 0 <= row < self.rowCount():
-            return getattr(self.tests_list[row], attribute)
+            return getattr(self.filtered_tests_list[row], attribute)
 
     @QtCore.Slot(int, result='QString')
     def get_formatted_start_date(self, row):
-        return self.tests_list[row].start_date.strftime("%Y-%m-%d %H:%M:%S")
+        return self.filtered_tests_list[row].start_date.strftime("%Y-%m-%d %H:%M:%S")
 
     @QtCore.Slot(int, result='QString')
     def get_formatted_end_date(self, row):
-        return self.tests_list[row].end_date.strftime("%Y-%m-%d %H:%M:%S")
+        return self.filtered_tests_list[row].end_date.strftime("%Y-%m-%d %H:%M:%S")
 
     @QtCore.Slot(result='QString')
     def get_test_run_name(self):
@@ -100,11 +130,11 @@ class TrxListModel(QtCore.QAbstractListModel):
 
     @QtCore.Slot(int, result='QString')
     def get_stdout(self, row):
-        return self.tests_list[row].output.stdout or ""
+        return self.filtered_tests_list[row].output.stdout or ""
 
     @QtCore.Slot(int, result='QString')
     def get_stderr(self, row):
-        return self.tests_list[row].output.stderr or ""
+        return self.filtered_tests_list[row].output.stderr or ""
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
