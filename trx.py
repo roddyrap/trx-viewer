@@ -9,6 +9,7 @@ TRX_SCHEMA_NAME = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}"
 TEST_RUN_TAG = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}TestRun"
 TEST_RESULT_TAG = f"{TRX_SCHEMA_NAME}UnitTestResult"
 
+# TODO: Should probably be namedtuple.
 @dataclass
 class TestOutput:
     stdout: Optional[str] = None
@@ -42,6 +43,18 @@ class TestData:
     @classmethod
     def from_xml(cls, xml_node: ElementTree.Element):
         output_node = xml_node.find(f"{TRX_SCHEMA_NAME}Output")
+
+        if (stdout_node := output_node.find(f"{TRX_SCHEMA_NAME}StdOut")) is not None: 
+            stdout = stdout_node.text
+        else:
+            stdout = None
+
+        # TODO: StdErr isn't tested.
+        if (stderr_node := output_node.find(f"{TRX_SCHEMA_NAME}StdErr")) is not None: 
+            stderr = stderr_node.text
+        else:
+            stderr = None
+
         return cls(
             xml_node.get("executionId"),
             xml_node.get("testId"),
@@ -53,8 +66,7 @@ class TestData:
             datetime.fromisoformat(xml_node.get("startTime")),
             datetime.fromisoformat(xml_node.get("endTime")),
 
-            # TODO: StdErr isn't tested.
-            TestOutput(output_node.find(f"{TRX_SCHEMA_NAME}StdOut"), output_node.find(f"{TRX_SCHEMA_NAME}StdErr")),
+            TestOutput(stdout, stderr),
 
             xml_node.get("testType"),
             xml_node.get("outcome"),

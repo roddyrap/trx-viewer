@@ -98,6 +98,14 @@ class TrxListModel(QtCore.QAbstractListModel):
     def get_is_loading(self):
         return self.is_loading
 
+    @QtCore.Slot(int, result='QString')
+    def get_stdout(self, row):
+        return self.tests_list[row].output.stdout or ""
+
+    @QtCore.Slot(int, result='QString')
+    def get_stderr(self, row):
+        return self.tests_list[row].output.stderr or ""
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     model = TrxListModel(sys.argv[1])

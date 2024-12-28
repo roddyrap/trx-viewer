@@ -141,6 +141,9 @@ ApplicationWindow {
                 id: test_outcome_image;
                 anchors.top: test_information.top;
                 anchors.right: test_information.right;
+
+                width: 128;
+                height: 128;
             }
 
             Text {
@@ -178,6 +181,28 @@ ApplicationWindow {
                 anchors.left: test_information.left;
             }
 
+            ColumnLayout {
+                id: test_output_layout;
+
+                anchors.top: test_outcome_image.bottom;
+                anchors.bottom: parent.bottom;
+                anchors.right: parent.right;
+                anchors.left: parent.left;
+
+                Layout.alignment: Qt.AlignTop;
+                uniformCellSizes: true;
+
+                OutputContainer {
+                    id: stdout_panel;
+                    title: "Standard Output"
+                }
+
+                OutputContainer {
+                    id: stderr_panel;
+                    title: "Standard Error"
+                }
+            }
+
             Connections {
                 target: root;
                 function onSelectedTest(index) {
@@ -187,6 +212,9 @@ ApplicationWindow {
                     date_difference_label.text = "Time: " + root.trxTestsModel.get_formatted_start_date(index) + " - " + root.trxTestsModel.get_formatted_end_date(index);
                     time_difference_label.text = "Duration: " + root.trxTestsModel.get_attr(index, "duration");
                     test_type_label.text = "Test Type: " +  + root.trxTestsModel.get_attr(index, "test_type");
+
+                    stdout_panel.output_text = root.trxTestsModel.get_stdout(index);
+                    stderr_panel.output_text = root.trxTestsModel.get_stderr(index);
                 }
             }
         }
