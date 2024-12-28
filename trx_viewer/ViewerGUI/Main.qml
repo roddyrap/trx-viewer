@@ -54,11 +54,26 @@ ApplicationWindow {
         x: Math.round((parent.width - width) / 2)
         y: Math.round((parent.height - height) / 2)
 
-        Label {
-            text: `TRX Viewer version 0.1.0
+        ColumnLayout {
+            anchors.fill: parent;
 
-Using QT open-source licensed code (GPLv3).
-Developed by Roddy Rappaport.`
+            Label {
+                text: "TRX Viewer version 0.1.0"
+            }
+
+            Image {
+                source: "logo.svg"
+
+                Layout.preferredHeight: 128
+                Layout.preferredWidth: 128
+
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            Label {
+                text: `Developed by Roddy Rappaport.
+Using QT open-source licensed code (GPLv3).`
+            }
         }
     }
 
@@ -123,6 +138,8 @@ Developed by Roddy Rappaport.`
             TextField {
                 id: filter_input
 
+                // Don't allow to edit the filters if there's no active file.
+                enabled: root.trxTestsModel.test_run_name ? true : false;
                 placeholderText: "Enter filter..."
 
                 Layout.fillWidth: true;
