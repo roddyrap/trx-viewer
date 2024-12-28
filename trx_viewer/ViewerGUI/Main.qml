@@ -58,7 +58,7 @@ ApplicationWindow {
             anchors.fill: parent;
 
             Label {
-                text: "TRX Viewer version 0.1.0"
+                text: "TRX Viewer version 0.1.1"
             }
 
             Image {
