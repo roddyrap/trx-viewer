@@ -176,44 +176,45 @@ ApplicationWindow {
                 height: 128;
             }
 
-            Label {
-                color: Style.foreground;
-                id: test_name_label;
-                wrapMode: Text.Wrap;
-
-                bottomPadding: 10;
-
+            ScrollView {
                 anchors.top: test_information.top;
                 anchors.left: test_information.left;
                 anchors.right: test_outcome_image.left;
-            }
+                anchors.bottom: test_outcome_image.bottom;
+                clip: true;
 
-            Label {
-                color: Style.foreground;
-                id: execution_id_label;
-                anchors.top: test_name_label.bottom;
-                anchors.left: test_information.left;
-            }
 
-            Label {
-                color: Style.foreground;
-                id: date_difference_label;
-                anchors.top: execution_id_label.bottom;
-                anchors.left: test_information.left;
-            }
+                ColumnLayout {
+                    anchors.fill: parent;
 
-            Label {
-                color: Style.foreground;
-                id: time_difference_label;
-                anchors.top: date_difference_label.bottom;
-                anchors.left: test_information.left;
-            }
+                    Label {
+                        color: Style.foreground;
+                        id: test_name_label;
+                        wrapMode: Text.Wrap;
 
-            Label {
-                color: Style.foreground;
-                id: test_type_label;
-                anchors.top: time_difference_label.bottom;
-                anchors.left: test_information.left;
+                        bottomPadding: 10;
+                    }
+
+                    Label {
+                        color: Style.foreground;
+                        id: execution_id_label;
+                    }
+
+                    Label {
+                        color: Style.foreground;
+                        id: date_difference_label;
+                    }
+
+                    Label {
+                        color: Style.foreground;
+                        id: time_difference_label;
+                    }
+
+                    Label {
+                        color: Style.foreground;
+                        id: test_type_label;
+                    }
+                }
             }
 
             ColumnLayout {
@@ -247,7 +248,7 @@ ApplicationWindow {
                     test_outcome_image.source = root.trxTestsModel.get_attr(index, "outcome") == "Passed" ? "passed.svg" :  "failed.svg";
                     date_difference_label.text = "Time: " + root.trxTestsModel.get_formatted_start_date(index) + " - " + root.trxTestsModel.get_formatted_end_date(index);
                     time_difference_label.text = "Duration: " + root.trxTestsModel.get_attr(index, "duration");
-                    test_type_label.text = "Test Type: " +  + root.trxTestsModel.get_attr(index, "test_type");
+                    test_type_label.text = "Test Type: " + root.trxTestsModel.get_attr(index, "test_type");
 
                     stdout_panel.output_text = root.trxTestsModel.get_stdout(index);
                     stderr_panel.output_text = root.trxTestsModel.get_stderr(index);
