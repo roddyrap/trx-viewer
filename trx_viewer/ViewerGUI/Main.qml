@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: root;
@@ -11,6 +12,35 @@ ApplicationWindow {
 
     required property QtObject trxTestsModel
     signal selectedTest(int test_index)
+
+    menuBar: MenuBar {
+        Menu {
+            title: "File"
+            Action {
+                text: "Open...";
+                onTriggered: trx_file_picker.open();
+            }
+            MenuSeparator { }
+            Action {
+                text: "Quit"
+                onTriggered: Qt.quit();
+            }
+        }
+        Menu {
+            title: "Help"
+            Action { text: "About" }
+        }
+    }
+
+    FileDialog {
+        id: trx_file_picker
+        title: "Please choose a file"
+        onAccepted: {
+            console.log("Picked file: " + trx_file_picker.selectedFile);
+            root.trxTestsModel.load_file(trx_file_picker.selectedFile.toString().replace("file://",""))
+        }
+        nameFilters: [ "TRX files (*.trx)", "All files (*)" ]
+    }
 
     footer: Label {
         id: num_tests_label;
@@ -31,7 +61,7 @@ ApplicationWindow {
         anchors.leftMargin: 5;
         anchors.rightMargin: 5;
 
-        text: "TRX Tests Viewer - " + root.trxTestsModel.get_test_run_name();
+        text: root.trxTestsModel.test_run_name ? "TRX Tests Viewer - " + root.trxTestsModel.test_run_name : "Open a file";
         font.pointSize: 20;
         color: Style.foreground;
     }
@@ -45,7 +75,7 @@ ApplicationWindow {
         anchors.leftMargin: 5;
         anchors.rightMargin: 5;
 
-        text: "File: " + root.trxTestsModel.get_filename();
+        text: root.trxTestsModel.filename ? "File: " + root.trxTestsModel.filename : "";
         font.pointSize: 10;
         color: Style.foreground;
     }

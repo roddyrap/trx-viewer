@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 import threading
 
 from PySide6 import QtCore
@@ -12,7 +12,7 @@ class TrxListModel(QtCore.QAbstractListModel):
     index_role = QtCore.Qt.UserRole + 2
     success_role = QtCore.Qt.UserRole + 3
 
-    def __init__(self, trx_filename: str, test_load_update_interval = 100_000, parent=None):
+    def __init__(self, trx_filename: Optional[str], test_load_update_interval = 100_000, parent=None):
         super().__init__(parent)
 
         self.test_load_update_interval = test_load_update_interval
@@ -21,13 +21,30 @@ class TrxListModel(QtCore.QAbstractListModel):
         self.tests_list: List[TestRun] = []
         self.filtered_tests_list: List[TestRun] = self.tests_list
 
-        self.streamed_tests = StreamedTestMetadata(self.filename)
+        self.streamed_tests: Optional[StreamedTestMetadata] = None
+
+        if self.filename is not None:
+            self.load_file(self.filename)
+        else:
+            self.is_loading = False
+
+    @QtCore.Slot(str)
+    def load_file(self, filename: str):
+        self.tests_list = []
+        self.filtered_tests_list = self.tests_list
+
         self.is_loading = True
+        self.filename = filename
+        self.streamed_tests = StreamedTestMetadata(self.filename)
+        self.test_run_changed.emit()
 
         test_load_thread = threading.Thread(target=self.load_tests)
         test_load_thread.start()
 
     def load_tests(self):
+        if self.streamed_tests is None:
+            return
+
         for test_index, new_test in enumerate(self.streamed_tests.yield_tests()):
             layout_update = test_index % self.test_load_update_interval == 0
             if layout_update:
@@ -95,6 +112,31 @@ class TrxListModel(QtCore.QAbstractListModel):
 
         return True
 
+    @QtCore.Signal
+    def filename_changed(self):
+        pass
+
+    def read_filename(self):
+        return self._filename
+
+    def set_filename(self, val):
+        self._filename = val
+        self.filename_changed.emit()
+
+    filename = QtCore. Property(str, read_filename, set_filename, notify=filename_changed)
+
+    @QtCore.Signal
+    def test_run_changed(self):
+        pass
+
+    def read_test_run_name(self):
+        if self.streamed_tests is None:
+            return None
+
+        return self.streamed_tests.test_run.name
+
+    test_run_name = QtCore. Property(str, read_test_run_name, notify=test_run_changed)
+
     @QtCore.Slot(int, result='QVariant')
     def get(self, row):
         if 0 <= row < self.rowCount():
@@ -112,14 +154,6 @@ class TrxListModel(QtCore.QAbstractListModel):
     @QtCore.Slot(int, result='QString')
     def get_formatted_end_date(self, row):
         return self.filtered_tests_list[row].end_date.strftime("%Y-%m-%d %H:%M:%S")
-
-    @QtCore.Slot(result='QString')
-    def get_test_run_name(self):
-        return self.streamed_tests.test_run.name
-
-    @QtCore.Slot(result='QString')
-    def get_filename(self):
-        return self.filename
 
     @QtCore.Slot(result='bool')
     def get_is_loading(self):

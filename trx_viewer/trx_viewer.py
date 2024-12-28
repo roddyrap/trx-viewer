@@ -1,5 +1,6 @@
 import logging
 import sys
+import argparse
 import os
 
 from PySide6.QtGui import QGuiApplication
@@ -9,7 +10,13 @@ from .tests_model import TrxListModel
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    model = TrxListModel(sys.argv[1])
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename", nargs='?')
+
+    args = parser.parse_args()
+
+    model = TrxListModel(args.filename)
 
     app = QGuiApplication(sys.argv)
 
