@@ -7,33 +7,54 @@ ApplicationWindow {
     visible: true
     title: "TRX Viewer"
 
+    color: Style.background
+
     required property QtObject trxTestsModel
     signal selectedTest(int test_index)
 
+    footer: Label {
+        id: num_tests_label;
+
+        Layout.leftMargin: 5;
+        Layout.rightMargin: 5;
+
+        color: Style.foreground;
+        text: (test_list_view.model.get_is_loading() ? "Loading... " : "") + "Displayed tests: " + test_list_view.count
+    }
+
+    // TODO: Make these labels and the drop a header, why not.
     Label {
+        id: test_title
+
         anchors.left: parent.left;
         anchors.right: parent.right;
+        anchors.leftMargin: 5;
+        anchors.rightMargin: 5;
 
-        id: test_title
-        text: root.trxTestsModel.get_test_run_name();
+        text: "TRX Tests Viewer - " + root.trxTestsModel.get_test_run_name();
         font.pointSize: 20;
+        color: Style.foreground;
     }
 
     Label {
+        id: test_filename;
+
         anchors.top: test_title.bottom;
         anchors.left: parent.left;
         anchors.right: parent.right;
+        anchors.leftMargin: 5;
+        anchors.rightMargin: 5;
 
-        id: test_filename;
         text: "File: " + root.trxTestsModel.get_filename();
         font.pointSize: 10;
+        color: Style.foreground;
     }
 
     DropArea {
         anchors.top: parent.top;
         anchors.right: parent.right;
 
-        anchors.bottom: tests_view.top; 
+        anchors.bottom: test_filename.bottom; 
         // TODO: Connect with model and load file.
     }
 
@@ -43,17 +64,28 @@ ApplicationWindow {
         anchors.bottom: parent.bottom;
         anchors.left: parent.left;
         anchors.right: parent.right;
+        anchors.leftMargin: 5;
+        anchors.rightMargin: 5;
 
         uniformCellSizes: true;
 
         ColumnLayout {
             TextField {
-                Layout.fillWidth: true;
-
                 id: filter_input
 
+                placeholderText: "Enter filter..."
+
+                Layout.fillWidth: true;
+
+                color: Style.foreground;
+                placeholderTextColor: Style.foregrounddim;
+                background: Rectangle {
+                    radius: 5;
+                    color: Style.backgroundfaint;
+                }
+
                 onEditingFinished: {
-                    filter_input.background.color = root.trxTestsModel.apply_filter_string(filter_input.text) ? "lightgreen" : "lightcoral";
+                    filter_input.background.color = root.trxTestsModel.apply_filter_string(filter_input.text) ? Style.success : Style.failure;
                 }
             }
 
@@ -65,7 +97,7 @@ ApplicationWindow {
                 Layout.fillHeight: true;
                 Layout.fillWidth: true;
 
-                spacing: 10;
+                spacing: 2;
                 clip: true;
 
                 orientation: Qt.Vertical;
@@ -105,14 +137,13 @@ ApplicationWindow {
                         y: wrapper.y
                         width: label.width
                         height: label.height;
-                        
-                        radius: 5;
-                        color: success ? "darkgreen" : "darkred"
+                        radius: 2;
+                        color: success ? Style.success : Style.failure
                     }
-                    Text {
+                    Label {
                         id: label;
                         text: name;
-                        color: "white";
+                        color: Style.foreground;
                         padding: 5;
                     }
                     MouseArea {
@@ -123,16 +154,11 @@ ApplicationWindow {
                 }
 
                 highlight: Rectangle {
-                    color: "darkblue";
+                    color: Style.accent;
                     width: test_list_view.contentWidth;
                     z: .5;
                 }
                 focus: true;
-            }
-
-            Text {
-                id: num_tests;
-                text: (test_list_view.model.get_is_loading() ? "Loading... " : "") + "Displayed tests: " + test_list_view.count
             }
         }
 
@@ -150,7 +176,8 @@ ApplicationWindow {
                 height: 128;
             }
 
-            Text {
+            Label {
+                color: Style.foreground;
                 id: test_name_label;
                 wrapMode: Text.Wrap;
 
@@ -161,25 +188,29 @@ ApplicationWindow {
                 anchors.right: test_outcome_image.left;
             }
 
-            Text {
+            Label {
+                color: Style.foreground;
                 id: execution_id_label;
                 anchors.top: test_name_label.bottom;
                 anchors.left: test_information.left;
             }
 
-            Text {
+            Label {
+                color: Style.foreground;
                 id: date_difference_label;
                 anchors.top: execution_id_label.bottom;
                 anchors.left: test_information.left;
             }
 
-            Text {
+            Label {
+                color: Style.foreground;
                 id: time_difference_label;
                 anchors.top: date_difference_label.bottom;
                 anchors.left: test_information.left;
             }
 
-            Text {
+            Label {
+                color: Style.foreground;
                 id: test_type_label;
                 anchors.top: time_difference_label.bottom;
                 anchors.left: test_information.left;
@@ -192,6 +223,7 @@ ApplicationWindow {
                 anchors.bottom: parent.bottom;
                 anchors.right: parent.right;
                 anchors.left: parent.left;
+                anchors.topMargin: 10;
 
                 Layout.alignment: Qt.AlignTop;
                 uniformCellSizes: true;

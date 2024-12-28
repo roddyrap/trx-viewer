@@ -7,27 +7,39 @@ ColumnLayout {
     property alias title: output_title.text;
     property alias output_text: output_text_label.text;
 
-    Text {
+    Label {
         id: output_title;
+        color: Style.foreground;
+
+        Layout.fillWidth: true;
+
+        padding: 5;
+
+        background: Rectangle {
+            radius: 5; 
+            color: Style.primary;
+        }
     }
 
     ScrollView {
         id: text_scroll;
 
+        background: Rectangle{
+            radius: 5;
+            color: Style.backgroundfaint;
+        }
+
         Layout.fillWidth: true;
         Layout.fillHeight: true;
-
-        background: Rectangle {
-            opacity: 1;
-            color: "white";
-        }
 
         ScrollBar.vertical.policy: ScrollBar.AlwaysOn;
         clip: true;
 
-        Text {
+        Label {
+            color: Style.foreground;
             id: output_text_label;
-            textFormat: Text.PlainText
+            textFormat: Text.PlainText;
+            padding: 5;
         }
     }
 }
