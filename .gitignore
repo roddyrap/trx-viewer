@@ -1,4 +1,4 @@
 # Virtual Environments are not recommended to be a part of git, as they don't work in different machines.
 env/
-
+dist/
 __pycache__/

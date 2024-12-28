@@ -4,7 +4,7 @@ import operator
 import logging
 import re
 
-from trx import TestData
+from .trx import TestData
 
 OPERATOR_MAP = {
     "==": operator.eq,

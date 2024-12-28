@@ -1,14 +1,11 @@
 import logging
 from typing import List
-import sys
 import threading
 
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtQml import QQmlApplicationEngine
 from PySide6 import QtCore
 
-from trx import TestRun, StreamedTestMetadata
-from expression_filter import build_filter
+from .trx import TestRun, StreamedTestMetadata
+from .expression_filter import build_filter
 
 class TrxListModel(QtCore.QAbstractListModel):
     name_role = QtCore.Qt.UserRole + 1
@@ -135,24 +132,3 @@ class TrxListModel(QtCore.QAbstractListModel):
     @QtCore.Slot(int, result='QString')
     def get_stderr(self, row):
         return self.filtered_tests_list[row].output.stderr or ""
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    model = TrxListModel(sys.argv[1])
-
-    app = QGuiApplication(sys.argv)
-
-    engine = QQmlApplicationEngine()
-    engine.setInitialProperties({
-        "trxTestsModel": model
-    })
-
-    engine.addImportPath(sys.path[0])
-    engine.loadFromModule("ViewerGUI", "Main")
-    if not engine.rootObjects():
-        sys.exit(-1)
-
-    exit_code = app.exec()
-    del engine
-
-    sys.exit(exit_code)
